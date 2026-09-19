@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backstage
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/jmarcelotse/platform-gitops
+    targetRevision: main
+    path: apps/backstage
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backstage
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # O Secret backstage-postgres vive fora do Git. O Argo CD nao o
+      # gerencia e, por nao o ter criado, tambem nao o remove no prune.
+      - CreateNamespace=true
