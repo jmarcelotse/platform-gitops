@@ -74,6 +74,9 @@ spec:
             - name: config
               mountPath: /config
               readOnly: true
+            - name: catalog
+              mountPath: /catalog
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /.backstage/health/v1/readiness
@@ -90,3 +93,6 @@ spec:
         - name: config
           configMap:
             name: backstage-config
+        - name: catalog
+          configMap:
+            name: backstage-catalog

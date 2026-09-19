@@ -30,14 +30,10 @@ data:
         guest: {}
 
     catalog:
+      # Substitui os dados de exemplo do scaffold pelas entidades reais,
+      # montadas do ConfigMap backstage-catalog.
       locations:
         - type: file
-          target: ./examples/entities.yaml
-        - type: file
-          target: ./examples/template/template.yaml
+          target: /catalog/entities.yaml
           rules:
-            - allow: [Template]
-        - type: file
-          target: ./examples/org.yaml
-          rules:
-            - allow: [User, Group]
+            - allow: [Component, System, Resource, User, Group, API, Domain]

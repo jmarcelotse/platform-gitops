@@ -1,0 +1,137 @@
+# Entidades do catalogo, montadas como arquivo no container.
+#
+# Enquanto nao houver integracao com o GitHub configurada, o Backstage
+# nao consegue ler catalog-info.yaml de repositorios privados. Definir
+# aqui permite catalogar as aplicacoes reais desde ja; o caminho
+# definitivo e mover cada entidade para o repositorio da propria
+# aplicacao quando o GitHub App existir.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backstage-catalog
+  namespace: backstage
+data:
+  entities.yaml: |
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: User
+    metadata:
+      name: jmarcelotse
+      description: Jose Marcelo
+    spec:
+      memberOf: [plataforma]
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: Group
+    metadata:
+      name: plataforma
+      description: Time responsavel pela plataforma interna
+    spec:
+      type: team
+      children: []
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: System
+    metadata:
+      name: financas-pessoais
+      description: Aplicacoes de acompanhamento financeiro pessoal
+    spec:
+      owner: plataforma
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: System
+    metadata:
+      name: plataforma-interna
+      description: Componentes da plataforma - portal, GitOps e entrada de trafego
+    spec:
+      owner: plataforma
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: Component
+    metadata:
+      name: carteira-mensal
+      description: "Analise mensal de carteira: renda passiva, protecao e liberdade financeira (Nubank)"
+      annotations:
+        github.com/project-slug: jmarcelotse/carteira-mensal
+        backstage.io/kubernetes-id: carteira-mensal
+      tags: [python, financas]
+      links:
+        - url: https://carteira.kind.localhost
+          title: Relatorios
+    spec:
+      type: service
+      lifecycle: production
+      owner: plataforma
+      system: financas-pessoais
+      dependsOn:
+        - resource:default/carteira-mensal-db
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: Component
+    metadata:
+      name: gestao-financeira
+      description: Gestao financeira pessoal
+      annotations:
+        github.com/project-slug: jmarcelotse/gestaofinanceira
+        backstage.io/kubernetes-id: gestao-financeira
+      tags: [typescript, financas]
+      links:
+        - url: https://gestao.kind.localhost
+          title: Aplicacao
+    spec:
+      type: service
+      lifecycle: production
+      owner: plataforma
+      system: financas-pessoais
+      dependsOn:
+        - resource:default/gestao-financeira-db
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: Component
+    metadata:
+      name: backstage
+      description: O proprio portal, gerenciado pelo Argo CD a partir do platform-gitops
+      annotations:
+        github.com/project-slug: jmarcelotse/backstage-idp
+        backstage.io/kubernetes-id: backstage
+      tags: [typescript, plataforma]
+      links:
+        - url: https://argocd.kind.localhost
+          title: Argo CD
+    spec:
+      type: website
+      lifecycle: experimental
+      owner: plataforma
+      system: plataforma-interna
+      dependsOn:
+        - resource:default/backstage-db
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: Resource
+    metadata:
+      name: carteira-mensal-db
+      description: PostgreSQL da carteira-mensal
+    spec:
+      type: database
+      owner: plataforma
+      system: financas-pessoais
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: Resource
+    metadata:
+      name: gestao-financeira-db
+      description: PostgreSQL da gestao-financeira
+    spec:
+      type: database
+      owner: plataforma
+      system: financas-pessoais
+    ---
+    apiVersion: backstage.io/v1alpha1
+    kind: Resource
+    metadata:
+      name: backstage-db
+      description: PostgreSQL do catalogo do Backstage
+    spec:
+      type: database
+      owner: plataforma
+      system: plataforma-interna
