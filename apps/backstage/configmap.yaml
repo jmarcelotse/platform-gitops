@@ -1,0 +1,43 @@
+# Configuracao de producao do Backstage.
+#
+# Segredos vem por variavel de ambiente, do Secret backstage-postgres.
+# Este arquivo so referencia os nomes, nunca os valores.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backstage-config
+  namespace: backstage
+data:
+  app-config.production.yaml: |
+    app:
+      baseUrl: https://backstage.kind.localhost
+
+    backend:
+      baseUrl: https://backstage.kind.localhost
+      listen: ':7007'
+      cors:
+        origin: https://backstage.kind.localhost
+      database:
+        client: pg
+        connection:
+          host: ${POSTGRES_HOST}
+          port: ${POSTGRES_PORT}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+
+    auth:
+      providers:
+        guest: {}
+
+    catalog:
+      locations:
+        - type: file
+          target: ./examples/entities.yaml
+        - type: file
+          target: ./examples/template/template.yaml
+          rules:
+            - allow: [Template]
+        - type: file
+          target: ./examples/org.yaml
+          rules:
+            - allow: [User, Group]

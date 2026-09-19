@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backstage
+  namespace: backstage
+spec:
+  type: ClusterIP
+  selector:
+    app: backstage
+  ports:
+    - port: 7007
+      targetPort: http
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage
+  namespace: backstage
+  labels:
+    app: backstage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backstage
+  template:
+    metadata:
+      labels:
+        app: backstage
+    spec:
+      containers:
+        - name: backstage
+          # Imagem construida localmente e carregada no kind. Nao ha
+          # registry, entao IfNotPresent evita tentativa de pull.
+          image: backstage-idp:0.1.0
+          imagePullPolicy: IfNotPresent
+          # O CMD da imagem e "node packages/backend --config ...".
+          # Sobrescrever apenas args apaga o "node packages/backend", e o
+          # node recebe --config como opcao propria e recusa.
+          command:
+            - node
+            - packages/backend
+          args:
+            - --config
+            - app-config.yaml
+            - --config
+            - /config/app-config.production.yaml
+          ports:
+            - containerPort: 7007
+              name: http
+          env:
+            - name: POSTGRES_HOST
+              value: postgres.backstage.svc.cluster.local
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: backstage-postgres
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backstage-postgres
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /.backstage/health/v1/readiness
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /.backstage/health/v1/liveness
+              port: http
+            initialDelaySeconds: 40
+            periodSeconds: 15
+      volumes:
+        - name: config
+          configMap:
+            name: backstage-config
