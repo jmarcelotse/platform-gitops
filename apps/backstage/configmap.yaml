@@ -26,6 +26,9 @@ data:
           password: ${POSTGRES_PASSWORD}
 
     auth:
+      # Sem isto o app assume "development" e nao encontra o provider,
+      # que esta declarado sob "production".
+      environment: production
       # Emissor de sessao. O guest continua habilitado como saida de
       # emergencia enquanto o GitHub nao esta validado; remova depois.
       providers:
