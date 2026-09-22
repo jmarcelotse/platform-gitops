@@ -26,8 +26,19 @@ data:
           password: ${POSTGRES_PASSWORD}
 
     auth:
+      # Emissor de sessao. O guest continua habilitado como saida de
+      # emergencia enquanto o GitHub nao esta validado; remova depois.
       providers:
         guest: {}
+        github:
+          production:
+            clientId: ${AUTH_GITHUB_CLIENT_ID}
+            clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+            signIn:
+              resolvers:
+                # Casa o login do GitHub com a entidade User de mesmo
+                # nome no catalogo. Ha um user:default/jmarcelotse.
+                - resolver: usernameMatchingUserEntityName
 
     catalog:
       # Substitui os dados de exemplo do scaffold pelas entidades reais,

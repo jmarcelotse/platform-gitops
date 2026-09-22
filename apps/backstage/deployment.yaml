@@ -33,7 +33,7 @@ spec:
         - name: backstage
           # Imagem construida localmente e carregada no kind. Nao ha
           # registry, entao IfNotPresent evita tentativa de pull.
-          image: backstage-idp:0.1.0
+          image: backstage-idp:0.2.0
           imagePullPolicy: IfNotPresent
           # O CMD da imagem e "node packages/backend --config ...".
           # Sobrescrever apenas args apaga o "node packages/backend", e o
@@ -64,6 +64,18 @@ spec:
                 secretKeyRef:
                   name: backstage-postgres
                   key: POSTGRES_PASSWORD
+            # Credenciais do OAuth App do GitHub. O Secret vive fora do
+            # Git, criado diretamente no cluster.
+            - name: AUTH_GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: backstage-github-auth
+                  key: clientId
+            - name: AUTH_GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backstage-github-auth
+                  key: clientSecret
           resources:
             requests:
               cpu: 200m
